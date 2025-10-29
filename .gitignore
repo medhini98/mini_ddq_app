@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+
+# Environments
+.env
+.venv/
+venv/
+ENV/
+*.env
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Alembic migrations cache
+alembic/__pycache__/
+mini_ddq_app/alembic/__pycache__/
+
+# Data
+*.csv
+*.sqlite
+*.log
+
+# Test artifacts
+.coverage
+htmlcov/
+pytest_cache/
+
+# Uploads / assets
+assets/
