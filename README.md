@@ -301,12 +301,103 @@ Now:
 
 --- 
 
-## 11. Tests & Coverage
+## 11. Testing
+
+### Unit Test Suite – Overview
+
+This suite targets **auth, security, parsing utilities, DB session lifecycle, and JWT helpers**.  
+Tests run against the FastAPI app with `TestClient` and lightweight fixtures (e.g., `alpha_fixture`).
+
+Run all tests:
+```bash
+pytest -q
+```
+
+---
+
+#### Test Matrix
+
+| File | Focus Area | What It Verifies |
+|---|---|---|
+| `tests/test_auth_form.py` | OAuth2 form login | `/auth/token` accepts **form-encoded** `username/password` and returns a **Bearer** token. |
+| `tests/test_auth_route.py` | JSON login | `/auth/login` accepts **JSON** `{email, password}`; success and invalid-password cases. |
+| `tests/test_db_dep.py` | DB dependency | `get_db()` yields a live session and **always closes** it (generator exhausted). |
+| `tests/test_deps.py` | AuthZ guard | Invalid token ⇒ **401**; role guard blocks viewers on admin/analyst routes ⇒ **403/404**. |
+| `tests/test_hashing.py` | Password hashing | `hash_password()` + `verify_password()` round-trip; wrong password fails; **salted hashes differ** per call. |
+| `tests/test_import_utils.py` | Import helpers | `_str_to_bool`, `_parse_csv`, `_parse_json` normalize types and handle missing fields (no DB). |
+| `tests/test_jwt_utils.py` | JWT helpers | `create_access_token()` sets claims; `decode_token()` enforces **exp**; config **alg/secret** decode works. |
+
+---
+
+#### Auth / Login
+
+**`tests/test_auth_form.py`**
+- Posts to `/auth/token` using `application/x-www-form-urlencoded` (`username`, `password`).
+- Expects `200` with `{ access_token, token_type="bearer" }`.
+
+**`tests/test_auth_route.py`**
+- Posts to `/auth/login` using JSON.
+- **Success** with valid creds (`alice@alpha.com` / `alpha_admin`).
+- **Failure** with bad password ⇒ `401`.
+
+---
+
+#### Database Dependency
+
+**`tests/test_db_dep.py`**
+- Calls `get_db()` (generator).
+- Executes `SELECT 1` to confirm a working session.
+- Exhausts the generator to hit the `finally` and **close** the session (no leaks).
+
+---
+
+#### Dependencies & RBAC
+
+**`tests/test_deps.py`**
+- `GET /search?q=x` with an obviously bad token ⇒ **401** (invalid/expired).
+- Creates a **viewer** token and attempts `PUT /responses/{question_id}`:
+  - Route requires `admin`/`analyst`; viewer is **forbidden** ⇒ `403` (or `404` if the question ID doesn’t exist, which still proves the guard when it does).
+
+---
+
+#### Password Hashing
+
+**`tests/test_hashing.py`**
+- `hash_password()` and `verify_password()` succeed for the same password.
+- Wrong password returns **False**.
+- Two hashes for the same password are **different** (random salt per call).
+
+---
+
+#### Import Utilities (Pure Functions)
+
+**`tests/test_import_utils.py`**
+- `_str_to_bool` recognizes common truthy/falsey variants; unknown/`None` ⇒ `None`.
+- `_parse_csv` converts types:
+  - `is_required: "true" → True`, `"false" → False`
+  - `display_order: "3" → 3`, empty → `None`
+- `_parse_json` mirrors CSV parsing semantics for JSON payloads.
+
+> These tests **don’t touch the DB**; they validate parsing/normalization only.  
+> Tenant checks and inserts are covered in integration/E2E tests.
+
+---
+
+#### JWT Utilities
+
+**`tests/test_jwt_utils.py`**
+- `create_access_token()` includes **`sub`, `tenant_id`, `role`, `exp`**.
+- `decode_token()` returns those claims; **expired** tokens raise `ExpiredSignatureError`.
+- Token decodes using configured **`JWT_SECRET`** and **`JWT_ALG`**.
+
+---
+
+### Coverage
 ```bash
 pytest -q mini_ddq_app/tests --cov=mini_ddq_app --cov-report=term-missing
 ```
 
-Coverage:
+Coverage - Result:
 
 TOTAL: 650 statements, 91% covered
 
@@ -345,7 +436,27 @@ TOTAL: 650 statements, 91% covered
 
 --- 
 
-## 12. End-to-End Testing: Benchmark
+### Integration & End-to-End Test Files
+
+| File | Purpose | What It Covers |
+|------|----------|----------------|
+| **`it_test_auth.py`** | Tests authentication flow | Verifies login endpoint `/auth/login` → checks valid credentials produce a working JWT |
+| **`it_test_questions_responses.py`** | Core end-to-end test for tenant-scoped CRUD | ✅ Authenticates a user → ✅ Creates/fetches questions → ✅ Creates/updates responses → ✅ Confirms tenant isolation (no leakage across tenants) |
+| **`it_test_search.py`** | End-to-end tenant-aware search | ✅ Authenticated search → ✅ Validates results filtered by `tenant_id` |
+| **`it_test_imports.py`** | Bulk import validation | ✅ Uploads CSV/JSON → ✅ Ensures server parses, inserts, and returns success JSON |
+
+### Notes & toggles (optional but handy)
+- Seed user must exist (the script expects `alice@alpha.com / alpha_admin`).  
+- To test **async** path (if your endpoint supports it), call `/imports/questions?sync=false`.  
+- Change dataset size via `make_csv(..., n=...)` to stress-test parsing or DB performance.
+
+### (Reference) `bench_imports.py` summary
+- **`make_csv`**: builds a CSV with headers matching your importer.  
+- **`discover_questionnaire_id`**: tries to fetch one from `/questions`; otherwise you can hardcode an ID.  
+- **`client.post(... files={...})`**: sends multipart form data exactly like a browser upload.  
+- **Timing**: `time.perf_counter()` → simple wall-clock measurement for end-to-end duration.
+
+### End-to-End Testing: Benchmark
 
 - The benchmark script acts as an end-to-end sanity and performance test.
 - It spins up the real FastAPI app (via TestClient), authenticates, uploads a large CSV, and measures how long the entire flow - from request to DB insert-takes.
@@ -370,25 +481,6 @@ Result: {'mode': 'sync', 'format': 'csv', 'rows_total': 2000, 'rows_ok': 2000, '
 - rows_total/rows_ok/rows_failed are server-reported counters after parsing/validation.
 - The ~585 ms is measured locally via TestClient (no network latency), so it reflects pure app+DB performance on the machine; real HTTP calls will be a bit slower.
 
-### Integration & End-to-End Test Files
-
-| File | Purpose | What It Covers |
-|------|----------|----------------|
-| **`it_test_auth.py`** | Tests authentication flow | Verifies login endpoint `/auth/login` → checks valid credentials produce a working JWT |
-| **`it_test_questions_responses.py`** | Core end-to-end test for tenant-scoped CRUD | ✅ Authenticates a user → ✅ Creates/fetches questions → ✅ Creates/updates responses → ✅ Confirms tenant isolation (no leakage across tenants) |
-| **`it_test_search.py`** | End-to-end tenant-aware search | ✅ Authenticated search → ✅ Validates results filtered by `tenant_id` |
-| **`it_test_imports.py`** | Bulk import validation | ✅ Uploads CSV/JSON → ✅ Ensures server parses, inserts, and returns success JSON |
-
-### Notes & toggles (optional but handy)
-- Seed user must exist (the script expects `alice@alpha.com / alpha_admin`).  
-- To test **async** path (if your endpoint supports it), call `/imports/questions?sync=false`.  
-- Change dataset size via `make_csv(..., n=...)` to stress-test parsing or DB performance.
-
-### (Reference) `bench_imports.py` summary
-- **`make_csv`**: builds a CSV with headers matching your importer.  
-- **`discover_questionnaire_id`**: tries to fetch one from `/questions`; otherwise you can hardcode an ID.  
-- **`client.post(... files={...})`**: sends multipart form data exactly like a browser upload.  
-- **Timing**: `time.perf_counter()` → simple wall-clock measurement for end-to-end duration.
 
 ### Testing Levels Overview
 
@@ -407,7 +499,7 @@ Result: {'mode': 'sync', 'format': 'csv', 'rows_total': 2000, 'rows_ok': 2000, '
 
 --- 
 
-## 13. Run the App
+## 12. Run the App
 ```bash
 uvicorn mini_ddq_app.main:app --reload
 ```
