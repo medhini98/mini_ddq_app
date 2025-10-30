@@ -267,7 +267,7 @@ Handles secure session management via tokens instead of plaintext passwords.
 
 ---
 
-### 🧠 Notes
+### Notes
 
 - **Admins** → Full control within their tenant (create, edit, import, delete).  
 - **Analysts** → Can analyze and manage questions/responses, but not users.  
@@ -313,43 +313,43 @@ TOTAL: 650 statements, 91% covered
 
 | File Path                                             | Stmts | Miss | Cover | Missing                                                                                  |
 |--------------------------------------------------------|-------|------|--------|------------------------------------------------------------------------------------------|
-| mini_ddq_app/__init__.py                               | 5     | 0    | 100%   | —                                                                                        |
-| mini_ddq_app/auth/hashing.py                           | 7     | 0    | 100%   | —                                                                                        |
-| mini_ddq_app/auth/jwt.py                               | 10    | 0    | 100%   | —                                                                                        |
-| mini_ddq_app/config.py                                 | 9     | 0    | 100%   | —                                                                                        |
-| mini_ddq_app/db.py                                     | 11    | 0    | 100%   | —                                                                                        |
+| mini_ddq_app/__init__.py                               | 5     | 0    | 100%   | -                                                                                        |
+| mini_ddq_app/auth/hashing.py                           | 7     | 0    | 100%   | -                                                                                        |
+| mini_ddq_app/auth/jwt.py                               | 10    | 0    | 100%   | -                                                                                        |
+| mini_ddq_app/config.py                                 | 9     | 0    | 100%   | -                                                                                        |
+| mini_ddq_app/db.py                                     | 11    | 0    | 100%   | -                                                                                        |
 | mini_ddq_app/deps.py                                   | 35    | 2    | 94%    | 49, 57                                                                                   |
-| mini_ddq_app/models/question.py                        | 16    | 0    | 100%   | —                                                                                        |
-| mini_ddq_app/models/questionnaire.py                   | 15    | 0    | 100%   | —                                                                                        |
-| mini_ddq_app/models/response.py                        | 14    | 0    | 100%   | —                                                                                        |
-| mini_ddq_app/models/tenant.py                          | 13    | 0    | 100%   | —                                                                                        |
-| mini_ddq_app/models/user.py                            | 17    | 0    | 100%   | —                                                                                        |
+| mini_ddq_app/models/question.py                        | 16    | 0    | 100%   | -                                                                                        |
+| mini_ddq_app/models/questionnaire.py                   | 15    | 0    | 100%   | -                                                                                        |
+| mini_ddq_app/models/response.py                        | 14    | 0    | 100%   | -                                                                                        |
+| mini_ddq_app/models/tenant.py                          | 13    | 0    | 100%   | -                                                                                        |
+| mini_ddq_app/models/user.py                            | 17    | 0    | 100%   | -                                                                                        |
 | mini_ddq_app/routes/auth.py                            | 26    | 1    | 96%    | 34                                                                                       |
 | mini_ddq_app/routes/imports.py                         | 95    | 28   | 71%    | 49, 73–75, 79–81, 97–98, 108–114, 119–127, 149–150, 155, 159–161                        |
 | mini_ddq_app/routes/questions.py                       | 44    | 11   | 75%    | 35–42, 57, 72–85                                                                         |
 | mini_ddq_app/routes/responses.py                       | 53    | 10   | 81%    | 55–58, 79, 107–111                                                                       |
-| mini_ddq_app/routes/search.py                          | 21    | 0    | 100%   | —                                                                                        |
-| mini_ddq_app/tests/__init__.py                         | 0     | 0    | 100%   | —                                                                                        |
+| mini_ddq_app/routes/search.py                          | 21    | 0    | 100%   | -                                                                                        |
+| mini_ddq_app/tests/__init__.py                         | 0     | 0    | 100%   | -                                                                                        |
 | mini_ddq_app/tests/conftest.py                         | 93    | 1    | 99%    | 174                                                                                      |
-| mini_ddq_app/tests/it_test_auth.py                     | 6     | 0    | 100%   | —                                                                                        |
-| mini_ddq_app/tests/it_test_imports.py                  | 11    | 0    | 100%   | —                                                                                        |
-| mini_ddq_app/tests/it_test_questions_responses.py       | 28    | 0    | 100%   | —                                                                                        |
+| mini_ddq_app/tests/it_test_auth.py                     | 6     | 0    | 100%   | -                                                                                        |
+| mini_ddq_app/tests/it_test_imports.py                  | 11    | 0    | 100%   | -                                                                                        |
+| mini_ddq_app/tests/it_test_questions_responses.py       | 28    | 0    | 100%   | -                                                                                        |
 | mini_ddq_app/tests/it_test_search.py                   | 24    | 3    | 88%    | 9–10, 24                                                                                 |
-| mini_ddq_app/tests/test_auth_form.py                   | 5     | 0    | 100%   | —                                                                                        |
-| mini_ddq_app/tests/test_auth_route.py                  | 10    | 0    | 100%   | —                                                                                        |
-| mini_ddq_app/tests/test_db_dep.py                      | 9     | 0    | 100%   | —                                                                                        |
-| mini_ddq_app/tests/test_deps.py                        | 14    | 0    | 100%   | —                                                                                        |
-| mini_ddq_app/tests/test_hashing.py                     | 14    | 0    | 100%   | —                                                                                        |
-| mini_ddq_app/tests/test_import_utils.py                | 26    | 0    | 100%   | —                                                                                        |
-| mini_ddq_app/tests/test_jwt_utils.py                   | 19    | 0    | 100%   | —                                                                                        |
-| **TOTAL**                                              | **650** | **56** | **91%** | —                                                                                        |
+| mini_ddq_app/tests/test_auth_form.py                   | 5     | 0    | 100%   | -                                                                                        |
+| mini_ddq_app/tests/test_auth_route.py                  | 10    | 0    | 100%   | -                                                                                        |
+| mini_ddq_app/tests/test_db_dep.py                      | 9     | 0    | 100%   | -                                                                                        |
+| mini_ddq_app/tests/test_deps.py                        | 14    | 0    | 100%   | -                                                                                        |
+| mini_ddq_app/tests/test_hashing.py                     | 14    | 0    | 100%   | -                                                                                        |
+| mini_ddq_app/tests/test_import_utils.py                | 26    | 0    | 100%   | -                                                                                        |
+| mini_ddq_app/tests/test_jwt_utils.py                   | 19    | 0    | 100%   | -                                                                                        |
+| **TOTAL**                                              | **650** | **56** | **91%** | -                                                                                        |
 
 --- 
 
-## 12. Benchmark
+## 12. End-to-End Testing: Benchmark
 
 - The benchmark script acts as an end-to-end sanity and performance test.
-- It spins up the real FastAPI app (via TestClient), authenticates, uploads a large CSV, and measures how long the entire flow—from request to DB insert—takes.
+- It spins up the real FastAPI app (via TestClient), authenticates, uploads a large CSV, and measures how long the entire flow - from request to DB insert-takes.
 - This script spins up a local TestClient for the app, logs in (seeded user), auto-discovers a questionnaire_id, generates an in-memory CSV with 2,000 rows, and posts it to /imports/questions?sync=true as a multipart upload. 
 - It measures end-to-end time (client → router → parsing → validation → DB insert).
 - This helps confirm both correctness (no failed rows) and efficiency of the import pipeline.
