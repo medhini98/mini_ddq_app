@@ -250,28 +250,27 @@ Handles secure session management via tokens instead of plaintext passwords.
 - Ensures a 1:1 relationship per question within each tenant.
 - Role-based access enforced (admin/analyst only).
 
-### 🧩 Role–Permission Matrix
+### Role–Permission Matrix
 
 | Endpoint / Action | Description | Admin | Analyst | Viewer |
 |--------------------|-------------|:------:|:--------:|:-------:|
 | **`POST /auth/login`** | Login and get JWT token | ✅ | ✅ | ✅ |
 | **`GET /questions`** | View all questions for your tenant | ✅ | ✅ | ✅ |
-| **`POST /questions`** | Create new question | ✅ | ✅ | 🚫 |
-| **`PUT /questions/{id}` / `DELETE /questions/{id}`** | Update or delete a question | ✅ | ✅ | 🚫 |
+| **`POST /questions`** | Create new question | ✅ | 🚫 | 🚫 |
+| **`PUT /questions/{id}` / `DELETE /questions/{id}`** | Update or delete a question | ✅ | 🚫 | 🚫 |
 | **`GET /responses`** | View all responses for your tenant | ✅ | ✅ | ✅ |
 | **`GET /responses/{question_id}`** | View a single response | ✅ | ✅ | ✅ |
 | **`PUT /responses/{question_id}`** | Upsert (create or update) a response | ✅ | ✅ | 🚫 |
-| **`POST /imports/questions`** | Bulk import questions (CSV/JSON) | ✅ | ✅ | 🚫 |
+| **`POST /imports/questions`** | Bulk import questions (CSV/JSON) | ✅ | 🚫 | 🚫 |
 | **`GET /search`** | Search across questions and responses | ✅ | ✅ | ✅ |
-| **Background import (async)** | Run large imports in background | ✅ | ✅ | 🚫 |
+| **Background import (async)** | Run large imports in background | ✅ | 🚫 | 🚫 |
 
 ---
 
-### Notes
-
-- **Admins** → Full control within their tenant (create, edit, import, delete).  
-- **Analysts** → Can analyze and manage questions/responses, but not users.  
-- **Viewers** → Read-only; suitable for auditors or external reviewers.  
+**Summary:**
+- **Admin** → Full access: manage questions, imports, and responses within their tenant.  
+- **Analyst** → Limited write: can add/update responses but not manage questions or imports.  
+- **Viewer** → Read-only: can view questions/responses and perform searches.
 - All actions are **scoped by tenant** → no cross-tenant access possible.
 
 --- 
