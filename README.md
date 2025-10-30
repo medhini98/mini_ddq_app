@@ -370,17 +370,40 @@ Result: {'mode': 'sync', 'format': 'csv', 'rows_total': 2000, 'rows_ok': 2000, '
 - rows_total/rows_ok/rows_failed are server-reported counters after parsing/validation.
 - The ~585 ms is measured locally via TestClient (no network latency), so it reflects pure app+DB performance on the machine; real HTTP calls will be a bit slower.
 
+### Integration & End-to-End Test Files
+
+| File | Purpose | What It Covers |
+|------|----------|----------------|
+| **`it_test_auth.py`** | Tests authentication flow | Verifies login endpoint `/auth/login` → checks valid credentials produce a working JWT |
+| **`it_test_questions_responses.py`** | Core end-to-end test for tenant-scoped CRUD | ✅ Authenticates a user → ✅ Creates/fetches questions → ✅ Creates/updates responses → ✅ Confirms tenant isolation (no leakage across tenants) |
+| **`it_test_search.py`** | End-to-end tenant-aware search | ✅ Authenticated search → ✅ Validates results filtered by `tenant_id` |
+| **`it_test_imports.py`** | Bulk import validation | ✅ Uploads CSV/JSON → ✅ Ensures server parses, inserts, and returns success JSON |
+
 ### Notes & toggles (optional but handy)
 - Seed user must exist (the script expects `alice@alpha.com / alpha_admin`).  
 - To test **async** path (if your endpoint supports it), call `/imports/questions?sync=false`.  
 - Change dataset size via `make_csv(..., n=...)` to stress-test parsing or DB performance.
-
 
 ### (Reference) `bench_imports.py` summary
 - **`make_csv`**: builds a CSV with headers matching your importer.  
 - **`discover_questionnaire_id`**: tries to fetch one from `/questions`; otherwise you can hardcode an ID.  
 - **`client.post(... files={...})`**: sends multipart form data exactly like a browser upload.  
 - **Timing**: `time.perf_counter()` → simple wall-clock measurement for end-to-end duration.
+
+### Testing Levels Overview
+
+| Type of Test | Scope & Purpose | Example in This Project |
+|---------------|----------------|--------------------------|
+| **Unit Test** | Tests one small function or module in isolation (no DB, no FastAPI). Ensures individual logic works as expected. | `test_hashing.py`, `test_jwt_utils.py`, `test_import_utils.py` |
+| **Integration Test** | Tests interactions between components — routes, DB, dependencies — using real app context but limited scope. | `it_test_auth.py`, `it_test_questions_responses.py`, `it_test_search.py` |
+| **End-to-End (E2E) Test** | Tests the full system from API request to DB and back. Validates real authentication, business logic, and database writes in one flow. | `scripts/bench_imports.py` (auth → upload → parse → insert → measure) |
+
+---
+
+**Summary:**  
+- Unit = *Does each part work correctly?*  
+- Integration = *Do parts work together correctly?*  
+- End-to-End = *Does the whole system behave correctly from the user’s perspective?*  
 
 --- 
 
