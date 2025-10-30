@@ -184,6 +184,49 @@ Coverage:
 
 TOTAL: 650 statements, 91% covered
 
+### What the End-to-End (E2E) Test Does
+
+The E2E test exercises the **full request→response pipeline** of the Mini DDQ app — from an authenticated HTTP call down to database writes/reads — to prove that real user flows work as intended in a tenant-scoped system.
+
+#### Scope (Systems Touched)
+1. **Auth & RBAC**
+   - Logs in via `/auth/login`, obtains a JWT, and sends it as `Authorization: Bearer <token>`.
+   - Server decodes the JWT, loads the user, and attaches `tenant_id` + `role`.
+
+2. **Tenant Scoping**
+   - All subsequent requests are implicitly filtered by `tenant_id = current_user.tenant_id`.
+   - Verifies that the caller only sees/acts on their tenant’s data.
+
+3. **Functional Paths**
+   - **Questions (read):** Calls `/questions` and receives a list limited to the caller’s tenant.
+   - **Responses (write):** Calls `/responses` (upsert) to create/update a response for a question.
+   - **Search (read):** Calls `/search?q=...` and gets tenant-scoped matches.
+   - **Bulk Import (write):**
+     - Uploads a CSV to `/imports/questions?sync=true` (synchronous mode).
+     - Server parses, validates, and inserts rows, returning a structured summary:
+       `rows_total`, `rows_ok`, `rows_failed`, `errors`.
+     - Mixed-tenant CSV case confirms isolation: rows for the caller’s tenant **succeed**; cross-tenant rows **fail** with clear errors.
+
+4. **Database Layer**
+   - Uses real models & constraints (FKs, NOT NULLs, UNIQUEs).
+   - Commits transactions and surfaces row-level validation failures in the response (no mocks).
+
+#### What This Proves
+- **Authentication works** (JWT issuance + verification).
+- **Authorization works** (role checks via `require_role`).
+- **Tenant isolation works** (no cross-tenant reads/writes).
+- **Business flows work end-to-end**:
+  - Reading questions, writing responses, searching, and importing questions.
+- **Data integrity holds**:
+  - Inserts respect schema rules, and invalid rows are rejected with actionable error messages.
+
+#### Typical Success Signal
+- Login returns `200` with a valid `access_token`.
+- `/questions` returns only tenant-owned questions.
+- `/responses` upsert returns `200` with the saved response.
+- `/search` returns keyword matches scoped to the tenant.
+- `/imports/questions?sync=true` returns:
+
 
 --- 
 
